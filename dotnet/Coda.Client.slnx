@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/Coda.Client/Coda.Client.csproj" />
+  <Project Path="tests/Coda.Client.Tests/Coda.Client.Tests.csproj" />
+</Solution>
