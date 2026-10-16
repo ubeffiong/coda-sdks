@@ -131,3 +131,22 @@ public sealed class CodaClientTests
         Assert.Equal("idem-42", handler.Requests.Single().Request.Headers.GetValues("Idempotency-Key").Single());
     }
 }
+
+public sealed class CodaWebhooksTests
+{
+    private const string Secret = "whsec_Y29kYS10ZXN0LXdlYmhvb2stc2VjcmV0LTMyYnl0ZXM=";
+    private const string Id = "0198f1a2-0000-7000-8000-000000000001";
+    private const string Signature = "v0,old v1,iBHZWsokVTH0FJlTSGXVgcKqbLZN1NklHSqCNCG733Q=";
+    private const string Body = """{"id":"0198f1a2-0000-7000-8000-000000000001","type":"webhook.ping","data":{"message":"CODA webhook test"}}""";
+    private static readonly DateTimeOffset At = DateTimeOffset.FromUnixTimeSeconds(1792100000);
+
+    [Fact]
+    public void Verifies_the_shared_vector_and_rejects_tampering_replay_and_wrong_secrets()
+    {
+        Assert.True(CodaWebhooks.Verify(Secret, Id, "1792100000", Signature, Body, At));
+        Assert.True(CodaWebhooks.Verify(Secret, [new("Webhook-Id", Id), new("Webhook-Timestamp", "1792100000"), new("Webhook-Signature", Signature)], Body, At));
+        Assert.False(CodaWebhooks.Verify(Secret, Id, "1792100000", Signature, Body + " ", At));
+        Assert.False(CodaWebhooks.Verify(Secret, Id, "1792100000", Signature, Body, At.AddMinutes(10)));
+        Assert.False(CodaWebhooks.Verify("whsec_" + Convert.ToBase64String(new byte[32]), Id, "1792100000", Signature, Body, At));
+    }
+}

@@ -259,3 +259,23 @@ fn encode(s: &str) -> String {
 fn local_error(detail: &str) -> ApiError {
     ApiError { status: 0, code: "INVALID_ARGUMENT".into(), detail: detail.into(), correlation_id: None, retryable: false }
 }
+
+/// Verifies a CODA webhook (Standard Webhooks): `secret` is "whsec_...", the other arguments are the
+/// `webhook-id`, `webhook-timestamp` and `webhook-signature` headers and the raw body exactly as received.
+pub fn verify_webhook(secret: &str, id: &str, timestamp: &str, signature: &str, body: &str, now_unix: i64, tolerance_secs: i64) -> bool {
+    use base64::Engine as _;
+    use hmac::{Hmac, Mac};
+    let Ok(ts) = timestamp.parse::<i64>() else { return false };
+    if (now_unix - ts).abs() > tolerance_secs {
+        return false;
+    }
+    let Ok(key) = base64::engine::general_purpose::STANDARD.decode(secret.strip_prefix("whsec_").unwrap_or(secret)) else { return false };
+    let Ok(mut mac) = Hmac::<sha2::Sha256>::new_from_slice(&key) else { return false };
+    mac.update(format!("{id}.{timestamp}.{body}").as_bytes());
+    let expected = format!("v1,{}", base64::engine::general_purpose::STANDARD.encode(mac.finalize().into_bytes()));
+    signature.split(' ').any(|candidate| constant_time_eq(candidate.as_bytes(), expected.as_bytes()))
+}
+
+fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
+}

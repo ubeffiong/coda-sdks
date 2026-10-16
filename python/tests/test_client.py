@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from coda_client import CodaApiError, CodaClient  # noqa: E402
+from coda_client import CodaApiError, CodaClient, verify_webhook  # noqa: E402
 
 
 class Mock:
@@ -100,6 +100,23 @@ class CodaClientTests(unittest.TestCase):
         self.assertEqual(m.requests[0]["path"], "/api/v1/codes/validate-fhir?valueSet=idsr-immediate")
         self.assertEqual(m.requests[1]["headers"]["Idempotency-Key"], "idem-42")
         m.close()
+
+
+VECTOR_SECRET = "whsec_Y29kYS10ZXN0LXdlYmhvb2stc2VjcmV0LTMyYnl0ZXM="
+VECTOR_HEADERS = {
+    "Webhook-Id": "0198f1a2-0000-7000-8000-000000000001",
+    "Webhook-Timestamp": "1792100000",
+    "Webhook-Signature": "v0,old v1,iBHZWsokVTH0FJlTSGXVgcKqbLZN1NklHSqCNCG733Q=",
+}
+VECTOR_BODY = '{"id":"0198f1a2-0000-7000-8000-000000000001","type":"webhook.ping","data":{"message":"CODA webhook test"}}'
+
+
+class WebhookTests(unittest.TestCase):
+    def test_shared_vector(self):
+        self.assertTrue(verify_webhook(VECTOR_SECRET, VECTOR_HEADERS, VECTOR_BODY, now=1792100000))
+        self.assertFalse(verify_webhook(VECTOR_SECRET, VECTOR_HEADERS, VECTOR_BODY + " ", now=1792100000))
+        self.assertFalse(verify_webhook(VECTOR_SECRET, VECTOR_HEADERS, VECTOR_BODY, now=1792100000 + 600))
+        self.assertFalse(verify_webhook("whsec_" + "AQ" * 21 + "A=", VECTOR_HEADERS, VECTOR_BODY, now=1792100000))
 
 
 if __name__ == "__main__":

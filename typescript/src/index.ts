@@ -257,3 +257,43 @@ function newId(): string {
 }
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Verifies a CODA webhook (Standard Webhooks): `webhook-id`, `webhook-timestamp` and
+ * `webhook-signature` headers, HMAC-SHA256 over "id.timestamp.body" with the endpoint secret
+ * ("whsec_..."). Pass the raw request body exactly as received. Uses Web Crypto (Node 18+, browsers).
+ */
+export async function verifyWebhook(
+  secret: string,
+  headers: Record<string, string | string[] | undefined> | Headers,
+  body: string,
+  opts: { toleranceSeconds?: number; nowSeconds?: number } = {},
+): Promise<boolean> {
+  const get = (name: string): string | null => {
+    if (typeof (headers as Headers).get === 'function') return (headers as Headers).get(name);
+    const entry = Object.entries(headers as Record<string, string | string[] | undefined>).find(([k]) => k.toLowerCase() === name);
+    const value = entry?.[1];
+    return Array.isArray(value) ? value[0] ?? null : value ?? null;
+  };
+  const id = get('webhook-id');
+  const timestamp = get('webhook-timestamp');
+  const signature = get('webhook-signature');
+  if (!id || !timestamp || !signature) return false;
+  const ts = Number(timestamp);
+  const now = opts.nowSeconds ?? Math.floor(Date.now() / 1000);
+  if (!Number.isInteger(ts) || Math.abs(now - ts) > (opts.toleranceSeconds ?? 300)) return false;
+
+  const raw = secret.startsWith('whsec_') ? secret.slice(6) : secret;
+  const keyBytes = Uint8Array.from(atob(raw), (c) => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${id}.${timestamp}.${body}`)));
+  const expected = 'v1,' + btoa(String.fromCharCode(...mac));
+  return signature.split(' ').some((candidate) => constantTimeEqual(candidate, expected));
+}
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}

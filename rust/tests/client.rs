@@ -120,3 +120,16 @@ fn fhir_and_decision_headers() {
     assert_eq!(log[0].uri, "/api/v1/codes/validate-fhir?valueSet=idsr-immediate");
     assert_eq!(log[1].header("Idempotency-Key"), Some("idem-42"));
 }
+
+#[test]
+fn verify_webhook_shared_vector() {
+    use coda_client::verify_webhook;
+    let secret = "whsec_Y29kYS10ZXN0LXdlYmhvb2stc2VjcmV0LTMyYnl0ZXM=";
+    let id = "0198f1a2-0000-7000-8000-000000000001";
+    let sig = "v0,old v1,iBHZWsokVTH0FJlTSGXVgcKqbLZN1NklHSqCNCG733Q=";
+    let body = r#"{"id":"0198f1a2-0000-7000-8000-000000000001","type":"webhook.ping","data":{"message":"CODA webhook test"}}"#;
+    assert!(verify_webhook(secret, id, "1792100000", sig, body, 1792100000, 300));
+    assert!(!verify_webhook(secret, id, "1792100000", sig, &format!("{body} "), 1792100000, 300));
+    assert!(!verify_webhook(secret, id, "1792100000", sig, body, 1792100000 + 600, 300));
+    assert!(!verify_webhook("whsec_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", id, "1792100000", sig, body, 1792100000, 300));
+}

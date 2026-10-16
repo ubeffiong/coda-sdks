@@ -79,3 +79,24 @@ test('FHIR resources are sent as application/fhir+json; decisions carry the idem
   assert.equal(m.requests[1].headers['idempotency-key'], 'idem-42');
   await m.close();
 });
+
+import { verifyWebhook } from '../dist/index.js';
+
+const VECTOR = {
+  secret: 'whsec_Y29kYS10ZXN0LXdlYmhvb2stc2VjcmV0LTMyYnl0ZXM=',
+  headers: {
+    'webhook-id': '0198f1a2-0000-7000-8000-000000000001',
+    'webhook-timestamp': '1792100000',
+    'webhook-signature': 'v0,old v1,iBHZWsokVTH0FJlTSGXVgcKqbLZN1NklHSqCNCG733Q=',
+  },
+  body: '{"id":"0198f1a2-0000-7000-8000-000000000001","type":"webhook.ping","data":{"message":"CODA webhook test"}}',
+};
+
+test('verifyWebhook accepts the shared vector and rejects tampering, replay and wrong secrets', async () => {
+  const at = { nowSeconds: 1792100000 };
+  assert.equal(await verifyWebhook(VECTOR.secret, VECTOR.headers, VECTOR.body, at), true);
+  assert.equal(await verifyWebhook(VECTOR.secret, new Headers(VECTOR.headers), VECTOR.body, at), true);
+  assert.equal(await verifyWebhook(VECTOR.secret, VECTOR.headers, VECTOR.body + ' ', at), false);
+  assert.equal(await verifyWebhook(VECTOR.secret, VECTOR.headers, VECTOR.body, { nowSeconds: 1792100000 + 600 }), false);
+  assert.equal(await verifyWebhook('whsec_' + Buffer.alloc(32, 1).toString('base64'), VECTOR.headers, VECTOR.body, at), false);
+});
