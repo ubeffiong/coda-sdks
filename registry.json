@@ -1,0 +1,9 @@
+{
+  "$comment": "Where each SDK is published. Set published to true once a release is live on the registry; the Developer hub then leads with the registry command.",
+  "typescript": { "registry": "npm", "url": "https://www.npmjs.com/package/@coda/client", "published": false },
+  "python": { "registry": "PyPI", "url": "https://pypi.org/project/coda-client/", "published": false },
+  "dotnet": { "registry": "NuGet", "url": "https://www.nuget.org/packages/Coda.Client", "published": false },
+  "java": { "registry": "Maven Central", "url": "https://central.sonatype.com/artifact/org.coda/coda-client", "published": false },
+  "go": { "registry": "Go modules", "url": "https://pkg.go.dev/github.com/ubeffiong/coda/sdks/go", "published": false },
+  "rust": { "registry": "crates.io", "url": "https://crates.io/crates/coda-client", "published": false }
+}
