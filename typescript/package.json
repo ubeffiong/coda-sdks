@@ -45,7 +45,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && node -e \"require('fs').copyFileSync('dist/connect.js', '../../CODA-Web/public/connect.js')\"",
+    "build": "tsc -p tsconfig.json && node scripts/copy-connect.mjs",
     "test": "npm run build && node --test test/client.test.js",
     "prepublishOnly": "npm test"
   },
