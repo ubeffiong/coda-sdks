@@ -8,8 +8,37 @@ Thin, dependency-light clients for the CODA terminology API (v1) in six language
 | TypeScript / JavaScript (Node 18+, browsers) | [`typescript/`](typescript) | `@coda-terminology/client` | none (`fetch`) |
 | Python 3.9+ | [`python/`](python) | `coda-client` | none (standard library `urllib`) |
 | Java 17+ | [`java/`](java) | `io.github.ubeffiong:coda-client` (Maven Central) | Jackson Databind |
-| Go 1.21+ | [`go/`](go) | `github.com/ubeffiong/coda/sdks/go` | none (standard library) |
+| Go 1.21+ | [`go/`](go) | `github.com/ubeffiong/coda-sdks/go` | none (standard library) |
 | Rust 1.70+ | [`rust/`](rust) | `coda-client` | `ureq`, `serde`, `serde_json` |
+
+## Install
+
+Every release is on [GitHub Releases](https://github.com/ubeffiong/coda-sdks/releases), checked with SHA256SUMS. One command downloads, verifies and installs the SDK into the project in your current folder:
+
+```bash
+# macOS, Linux, WSL, Git Bash
+curl -fsSL https://raw.githubusercontent.com/ubeffiong/coda-sdks/main/install.sh | sh -s -- typescript   # or python, dotnet, java, go, rust
+```
+
+```powershell
+# Windows PowerShell 7+
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/ubeffiong/coda-sdks/main/install.ps1))) dotnet
+```
+
+Add a version to pin one, e.g. `... | sh -s -- python 0.1.0`. To install directly without the script:
+
+| Language | From GitHub |
+|---|---|
+| TypeScript / JavaScript | `npm install https://github.com/ubeffiong/coda-sdks/releases/download/v0.1.0/coda-terminology-client-0.1.0.tgz` |
+| Python | `pip install "coda-client @ git+https://github.com/ubeffiong/coda-sdks@v0.1.0#subdirectory=python"` |
+| C# / .NET | download `Coda.Client.0.1.0.nupkg` from the release, then `dotnet add package Coda.Client --source <folder>` |
+| Java | download `coda-client-0.1.0.jar`, then `mvn install:install-file -Dfile=coda-client-0.1.0.jar -DgroupId=io.github.ubeffiong -DartifactId=coda-client -Dversion=0.1.0 -Dpackaging=jar` |
+| Go | `go get github.com/ubeffiong/coda-sdks/go@v0.1.0` |
+| Rust | `cargo add coda-client --git https://github.com/ubeffiong/coda-sdks --tag v0.1.0` |
+
+Once published, the usual registry commands work too (`npm install @coda-terminology/client`, `pip install coda-client`, `dotnet add package Coda.Client`, Maven Central, `cargo add coda-client`).
+
+Integrating an EMR or another clinical system? Start with [docs/EMR-INTEGRATION.md](docs/EMR-INTEGRATION.md): samples for plain JavaScript, React and each SDK, plus HIPAA guidance for patient context.
 
 ## Contract
 
@@ -63,7 +92,7 @@ All SDKs are licensed under [Apache-2.0](LICENSE) and versioned together with [S
 | PyPI | `coda-client` |
 | NuGet | `Coda.Client` |
 | Maven Central | `io.github.ubeffiong:coda-client` |
-| Go modules | `github.com/ubeffiong/coda/sdks/go` (tags `sdks/go/vX.Y.Z`) |
+| Go modules | `github.com/ubeffiong/coda-sdks/go` (tags `go/vX.Y.Z`) |
 | crates.io | `coda-client` |
 
-Releases are published by [.github/workflows/sdk-release.yml](../.github/workflows/sdk-release.yml) when a `sdk-vX.Y.Z` tag is pushed. See [RELEASING.md](RELEASING.md) for the one-time registry set-up and the release steps.
+A `vX.Y.Z` tag builds every package into a GitHub Release ([release.yml](.github/workflows/release.yml)); [publish.yml](.github/workflows/publish.yml) then publishes to the registries. See [RELEASING.md](RELEASING.md).

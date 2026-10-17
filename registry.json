@@ -4,6 +4,6 @@
   "python": { "registry": "PyPI", "url": "https://pypi.org/project/coda-client/", "published": false },
   "dotnet": { "registry": "NuGet", "url": "https://www.nuget.org/packages/Coda.Client", "published": false },
   "java": { "registry": "Maven Central", "url": "https://central.sonatype.com/artifact/io.github.ubeffiong/coda-client", "published": false },
-  "go": { "registry": "Go modules", "url": "https://pkg.go.dev/github.com/ubeffiong/coda/sdks/go", "published": false },
+  "go": { "registry": "Go modules", "url": "https://pkg.go.dev/github.com/ubeffiong/coda-sdks/go", "published": false },
   "rust": { "registry": "crates.io", "url": "https://crates.io/crates/coda-client", "published": false }
 }

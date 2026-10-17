@@ -9,11 +9,11 @@ All six SDKs share one version and are released together by [`.github/workflows/
 | NuGet | `Coda.Client` | `dotnet nuget push` (package and symbols) |
 | Maven Central | `io.github.ubeffiong:coda-client` | `mvn -P release deploy` (signed jar, sources, javadoc) |
 | crates.io | `coda-client` | `cargo publish` |
-| Go modules | `github.com/ubeffiong/coda/sdks/go` | tag `sdks/go/vX.Y.Z` |
+| Go modules | `github.com/ubeffiong/coda-sdks/go` | tag `go/vX.Y.Z` |
 
 ## One-time set-up
 
-1. **Repository.** Push this repository to `github.com/ubeffiong/coda`. The package metadata, the Go module path and the Maven namespace all point there.
+1. **Repository.** Push this repository to `github.com/ubeffiong/coda-sdks`. The package metadata, the Go module path and the Maven namespace all point there.
 2. **Protected environment.** In GitHub, create the environment `sdk-release` with required reviewers. Every publishing job waits for that approval.
 3. **Registry accounts and secrets.** Create these as secrets of the `sdk-release` environment:
 

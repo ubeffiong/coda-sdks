@@ -1,0 +1,68 @@
+name: ci
+
+# The public coda-sdks repository: every SDK is tested on each push and pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.sdk }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sdk: [dotnet, typescript, python, java, go, rust]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - if: matrix.sdk == 'dotnet'
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - if: matrix.sdk == 'dotnet'
+        run: dotnet test dotnet/Coda.Client.slnx
+      - if: matrix.sdk == 'typescript'
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+      - if: matrix.sdk == 'typescript'
+        working-directory: typescript
+        run: npm ci && npm test
+      - if: matrix.sdk == 'python'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.9'
+      - if: matrix.sdk == 'python'
+        working-directory: python
+        run: python -m unittest discover -s tests -v
+      - if: matrix.sdk == 'java'
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4.9.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - if: matrix.sdk == 'java'
+        working-directory: java
+        run: mvn -B -q test
+      - if: matrix.sdk == 'go'
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version: '1.21'
+      - if: matrix.sdk == 'go'
+        working-directory: go
+        run: go vet ./... && go test ./...
+      - if: matrix.sdk == 'rust'
+        working-directory: rust
+        run: cargo test --locked
+
+  installers:
+    name: Install scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - run: bash -n install.sh && bash scripts/check-versions.sh

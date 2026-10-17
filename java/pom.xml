@@ -7,7 +7,7 @@
   <version>0.1.0</version>
   <name>CODA client</name>
   <description>Client for the CODA clinical terminology API</description>
-  <url>https://github.com/ubeffiong/coda</url>
+  <url>https://github.com/ubeffiong/coda-sdks</url>
   <licenses>
     <license>
       <name>Apache-2.0</name>
@@ -23,9 +23,9 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git:https://github.com/ubeffiong/coda.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/ubeffiong/coda.git</developerConnection>
-    <url>https://github.com/ubeffiong/coda/tree/main/sdks/java</url>
+    <connection>scm:git:https://github.com/ubeffiong/coda-sdks.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/ubeffiong/coda-sdks.git</developerConnection>
+    <url>https://github.com/ubeffiong/coda-sdks/tree/main/java</url>
   </scm>
   <properties>
     <maven.compiler.release>17</maven.compiler.release>

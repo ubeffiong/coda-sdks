@@ -11,14 +11,14 @@
     "fhir",
     "medical-coding"
   ],
-  "homepage": "https://github.com/ubeffiong/coda/tree/main/sdks/typescript#readme",
+  "homepage": "https://github.com/ubeffiong/coda-sdks/tree/main/typescript#readme",
   "bugs": {
-    "url": "https://github.com/ubeffiong/coda/issues"
+    "url": "https://github.com/ubeffiong/coda-sdks/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ubeffiong/coda.git",
-    "directory": "sdks/typescript"
+    "url": "git+https://github.com/ubeffiong/coda-sdks.git",
+    "directory": "typescript"
   },
   "license": "Apache-2.0",
   "author": "CODA contributors",

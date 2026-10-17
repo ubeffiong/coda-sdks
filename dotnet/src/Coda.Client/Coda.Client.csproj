@@ -13,9 +13,9 @@
     <PackageTags>coda;clinical-terminology;icd-11;snomed-ct;loinc;fhir;medical-coding</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/ubeffiong/coda/tree/main/sdks/dotnet</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/ubeffiong/coda/blob/main/sdks/dotnet/CHANGELOG.md</PackageReleaseNotes>
-    <RepositoryUrl>https://github.com/ubeffiong/coda</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/ubeffiong/coda-sdks/tree/main/dotnet</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/ubeffiong/coda-sdks/blob/main/dotnet/CHANGELOG.md</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/ubeffiong/coda-sdks</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>

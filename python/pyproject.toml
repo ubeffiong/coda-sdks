@@ -25,10 +25,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ubeffiong/coda"
-Documentation = "https://github.com/ubeffiong/coda/tree/main/sdks/python#readme"
-Issues = "https://github.com/ubeffiong/coda/issues"
-Changelog = "https://github.com/ubeffiong/coda/blob/main/sdks/python/CHANGELOG.md"
+Homepage = "https://github.com/ubeffiong/coda-sdks"
+Documentation = "https://github.com/ubeffiong/coda-sdks/tree/main/python#readme"
+Issues = "https://github.com/ubeffiong/coda-sdks/issues"
+Changelog = "https://github.com/ubeffiong/coda-sdks/blob/main/python/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]

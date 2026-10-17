@@ -2,7 +2,7 @@
 
 Java client for the CODA clinical terminology API. Java 17+, built on `java.net.http` and Jackson.
 
-Part of [CODA](https://github.com/ubeffiong/coda), clinical terminology intelligence: search, validation, value sets, mappings and an AI coding assistant across ICD-11, SNOMED CT, LOINC, RxNorm and more.
+Part of [CODA](https://github.com/ubeffiong/coda-sdks), clinical terminology intelligence: search, validation, value sets, mappings and an AI coding assistant across ICD-11, SNOMED CT, LOINC, RxNorm and more.
 
 ## Install
 
@@ -65,6 +65,6 @@ CODA is decision support. Suggestions from `analyzePhrase` always need human rev
 ## Links
 
 - Developer hub: the key button at the foot of the CODA sidebar (API reference, EMR sandbox, webhook simulator)
-- Integration guide: [docs/integration/coda-connect.md](https://github.com/ubeffiong/coda/blob/main/docs/integration/coda-connect.md)
+- Integration guide: [docs/EMR-INTEGRATION.md](https://github.com/ubeffiong/coda-sdks/blob/main/docs/EMR-INTEGRATION.md)
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
 - Licence: [Apache-2.0](LICENSE)

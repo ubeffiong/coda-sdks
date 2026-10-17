@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `github.com/ubeffiong/coda/sdks/go` are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/). Before 1.0.0, minor versions may contain breaking changes.
+All notable changes to `github.com/ubeffiong/coda-sdks/go` are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/). Before 1.0.0, minor versions may contain breaking changes.
 
 ## [Unreleased]
 

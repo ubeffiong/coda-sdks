@@ -23,6 +23,8 @@ export interface ConnectResult {
   status: 'completed';
   purpose: string;
   encounterRef: string | null;
+  /** The EMR's own opaque patient token, echoed back (never an identifier). */
+  patientRef?: string | null;
   completedAt: string;
   completedBy: string;
   selections: ConnectSelection[];
@@ -36,7 +38,10 @@ export interface PickOptions {
   valueSet?: string;
   maxSelections?: number;
   purpose?: string;
+  /** Opaque encounter token generated and mapped by the EMR (never an identifier). */
   encounterRef?: string;
+  /** Opaque patient token generated and mapped by the EMR, e.g. a random UUID (never an MRN or a hash of one). */
+  patientRef?: string;
 }
 
 export interface CodaConnectOptions {
