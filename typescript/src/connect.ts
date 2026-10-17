@@ -61,6 +61,13 @@ export interface CodaConnectOptions {
   display?: 'popup' | 'modal';
   /** Give up if the picker does not answer (default 15 minutes). */
   timeoutMs?: number;
+  /**
+   * Launch through your own server instead of the browser hand-over: your back-end opens the
+   * session with its integration API key and vouches for the signed-in clinician
+   * (POST /api/v1/connect/sessions with `clinician: { ref }`), then returns the `launchUrl`. The
+   * clinician lands in CODA already signed in, for this one session, with no CODA login.
+   */
+  launch?: (options: PickOptions) => Promise<{ launchUrl: string }>;
 }
 
 export type InsertFormat = 'display-code' | 'display' | 'code' | 'fhir-coding' | 'cwe' | ((s: ConnectSelection) => string);
@@ -86,13 +93,27 @@ export class CodaConnect {
   /** Opens the CODA picker for `text` and resolves with the selection. Must be called from a user gesture. */
   pick(pick: PickOptions): Promise<ConnectResult> {
     this.active?.close();
-    const url = `${this.codaOrigin}/connect?app=${encodeURIComponent(this.options.appId)}`;
+    const viaServer = this.options.launch;
+    // Opened now, inside the user's click, so pop-up blockers allow it; a server launch fills it in below.
+    const url = viaServer ? 'about:blank' : `${this.codaOrigin}/connect?app=${encodeURIComponent(this.options.appId)}`;
     const surface = this.options.display === 'modal' ? openModal(url) : openPopup(url, this.options.popup);
     if (!surface) return Promise.reject(new Error('The browser blocked the CODA window. Allow pop-ups for this site, or use display: "modal".'));
     this.active = surface;
 
-    const launch = { type: 'coda:launch', ...this.options.defaults, ...pick, text: pick.text.slice(0, 2000) };
+    const options = { ...this.options.defaults, ...pick, text: pick.text.slice(0, 2000) };
+    const launch = { type: 'coda:launch', ...options };
     return new Promise<ConnectResult>((resolve, reject) => {
+      if (viaServer) {
+        viaServer(options).then(({ launchUrl }) => {
+          // Only ever navigate to CODA itself.
+          if (new URL(launchUrl).origin !== this.codaOrigin) throw new Error('launchUrl is not on the CODA origin.');
+          surface.navigate(launchUrl);
+        }).catch((error: unknown) => {
+          finish();
+          reject(error);
+        });
+      }
+
       let launched = false;
       const finish = () => {
         window.removeEventListener('message', onMessage);
@@ -265,6 +286,7 @@ interface Surface {
   window: () => Window | null;
   closed: () => boolean;
   close: () => void;
+  navigate: (url: string) => void;
 }
 
 function openPopup(url: string, size?: { width: number; height: number }): Surface | null {
@@ -273,7 +295,7 @@ function openPopup(url: string, size?: { width: number; height: number }): Surfa
   const top = Math.max(0, (window.screenY ?? 0) + ((window.outerHeight ?? height) - height) / 2);
   const popup = window.open(url, 'coda-connect', `popup=yes,width=${width},height=${height},left=${left},top=${top}`);
   if (!popup) return null;
-  return { window: () => popup, closed: () => popup.closed, close: () => { if (!popup.closed) popup.close(); } };
+  return { window: () => popup, closed: () => popup.closed, close: () => { if (!popup.closed) popup.close(); }, navigate: (next) => { popup.location.href = next; } };
 }
 
 /** An accessible modal dialog hosting the picker in an iframe; Escape or the close button cancels. */
@@ -309,6 +331,7 @@ function openModal(url: string): Surface {
   const surface: Surface = {
     window: () => frame.contentWindow,
     closed: () => isClosed,
+    navigate: (next) => { frame.src = next; },
     close: () => {
       if (isClosed) return;
       isClosed = true;
