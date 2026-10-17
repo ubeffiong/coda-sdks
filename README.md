@@ -5,9 +5,9 @@ Thin, dependency-light clients for the CODA terminology API (v1) in six language
 | Language | Folder | Package name | Runtime deps |
 |---|---|---|---|
 | C# / .NET 8+ | [`dotnet/`](dotnet) | `Coda.Client` | none (BCL `HttpClient`, `System.Text.Json`) |
-| TypeScript / JavaScript (Node 18+, browsers) | [`typescript/`](typescript) | `@coda/client` | none (`fetch`) |
+| TypeScript / JavaScript (Node 18+, browsers) | [`typescript/`](typescript) | `@coda-terminology/client` | none (`fetch`) |
 | Python 3.9+ | [`python/`](python) | `coda-client` | none (standard library `urllib`) |
-| Java 17+ | [`java/`](java) | `org.coda:coda-client` | Jackson Databind |
+| Java 17+ | [`java/`](java) | `io.github.ubeffiong:coda-client` (Maven Central) | Jackson Databind |
 | Go 1.21+ | [`go/`](go) | `github.com/ubeffiong/coda/sdks/go` | none (standard library) |
 | Rust 1.70+ | [`rust/`](rust) | `coda-client` | `ureq`, `serde`, `serde_json` |
 
@@ -52,3 +52,18 @@ Each SDK has unit tests against a local mock HTTP server or handler. They cover:
 - giving up on non-retryable errors
 
 `sdks/smoke.sh` runs every SDK's example against a live CODA (e.g. the docker-compose stack).
+
+## Licence and releases
+
+All SDKs are licensed under [Apache-2.0](LICENSE) and versioned together with [Semantic Versioning](https://semver.org/). Each folder has its own README and CHANGELOG, which ship inside the package.
+
+| Registry | Package |
+|---|---|
+| npm | `@coda-terminology/client` |
+| PyPI | `coda-client` |
+| NuGet | `Coda.Client` |
+| Maven Central | `io.github.ubeffiong:coda-client` |
+| Go modules | `github.com/ubeffiong/coda/sdks/go` (tags `sdks/go/vX.Y.Z`) |
+| crates.io | `coda-client` |
+
+Releases are published by [.github/workflows/sdk-release.yml](../.github/workflows/sdk-release.yml) when a `sdk-vX.Y.Z` tag is pushed. See [RELEASING.md](RELEASING.md) for the one-time registry set-up and the release steps.

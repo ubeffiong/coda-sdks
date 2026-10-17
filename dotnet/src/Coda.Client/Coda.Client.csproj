@@ -9,5 +9,22 @@
     <Description>Client for the CODA clinical terminology API.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>CS1591</NoWarn>
+    <Authors>CODA contributors</Authors>
+    <PackageTags>coda;clinical-terminology;icd-11;snomed-ct;loinc;fhir;medical-coding</PackageTags>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/ubeffiong/coda/tree/main/sdks/dotnet</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/ubeffiong/coda/blob/main/sdks/dotnet/CHANGELOG.md</PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/ubeffiong/coda</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

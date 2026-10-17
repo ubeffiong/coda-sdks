@@ -1,7 +1,27 @@
 {
-  "name": "@coda/client",
+  "name": "@coda-terminology/client",
   "version": "0.1.0",
   "description": "Client for the CODA clinical terminology API",
+  "keywords": [
+    "coda",
+    "clinical-terminology",
+    "icd-11",
+    "snomed-ct",
+    "loinc",
+    "fhir",
+    "medical-coding"
+  ],
+  "homepage": "https://github.com/ubeffiong/coda/tree/main/sdks/typescript#readme",
+  "bugs": {
+    "url": "https://github.com/ubeffiong/coda/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ubeffiong/coda.git",
+    "directory": "sdks/typescript"
+  },
+  "license": "Apache-2.0",
+  "author": "CODA contributors",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,17 +36,25 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && node -e \"require('fs').copyFileSync('dist/connect.js', '../../CODA-Web/public/connect.js')\"",
-    "test": "npm run build && node --test test/client.test.js"
+    "test": "npm run build && node --test test/client.test.js",
+    "prepublishOnly": "npm test"
   },
   "devDependencies": {
     "typescript": "7.0.2"
   },
-  "license": "UNLICENSED"
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

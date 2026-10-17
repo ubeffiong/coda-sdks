@@ -1,7 +1,7 @@
 /**
  * CODA Connect for EMR web pages (ADR-013). Adds "Search with CODA" for highlighted text, opens
  * the CODA picker, and returns the clinician's selection. No dependencies; works as a plain ES
- * module (served by CODA at /connect.js) or bundled from @coda/client/connect.
+ * module (served by CODA at /connect.js) or bundled from @coda-terminology/client/connect.
  *
  * Security: messages go only to the CODA origin and are accepted only from the picker window
  * this page opened. CODA itself only posts results to origins registered for the app.

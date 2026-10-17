@@ -1,13 +1,37 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "coda-client"
 version = "0.1.0"
 description = "Client for the CODA clinical terminology API"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "CODA contributors" }]
 requires-python = ">=3.9"
 dependencies = []
+keywords = ["coda", "clinical terminology", "icd-11", "snomed ct", "loinc", "fhir", "medical coding"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Healthcare Industry",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+  "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/ubeffiong/coda"
+Documentation = "https://github.com/ubeffiong/coda/tree/main/sdks/python#readme"
+Issues = "https://github.com/ubeffiong/coda/issues"
+Changelog = "https://github.com/ubeffiong/coda/blob/main/sdks/python/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+coda_client = ["py.typed"]

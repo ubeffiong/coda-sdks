@@ -4,8 +4,15 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.70"
 description = "Client for the CODA clinical terminology API"
-license = "UNLICENSED"
-publish = false
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/ubeffiong/coda"
+homepage = "https://github.com/ubeffiong/coda/tree/main/sdks/rust"
+documentation = "https://docs.rs/coda-client"
+keywords = ["coda", "terminology", "icd-11", "snomed", "fhir"]
+categories = ["api-bindings", "science"]
+authors = ["CODA contributors"]
+include = ["src/**", "Cargo.toml", "README.md", "CHANGELOG.md", "LICENSE"]
 
 [dependencies]
 ureq = { version = "=2.10.1", features = ["json"] }
