@@ -32,7 +32,10 @@ New-Item -ItemType Directory -Path $work | Out-Null
 function Fetch([string] $file) {
     $target = Join-Path $work $file
     Invoke-WebRequest "$base/$file" -OutFile $target -UseBasicParsing
-    $sums = (Invoke-WebRequest "$base/SHA256SUMS" -UseBasicParsing).Content -split "`n"
+    # Release assets are served as binary; save the list and read it as text.
+    $sumsFile = Join-Path $work 'SHA256SUMS'
+    Invoke-WebRequest "$base/SHA256SUMS" -OutFile $sumsFile -UseBasicParsing
+    $sums = Get-Content $sumsFile
     $line = $sums | Where-Object { $_ -match " $([regex]::Escape($file))\s*$" } | Select-Object -First 1
     if (-not $line) { throw "coda-sdk: $file is not listed in SHA256SUMS" }
     $expected = ($line -split ' ')[0]
