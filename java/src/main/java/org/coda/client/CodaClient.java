@@ -61,6 +61,49 @@ public final class CodaClient {
         }
     }
 
+    /** Your signed-in user, vouched for by your integration: an opaque id and an optional display name. */
+    public record Clinician(String ref, String name) {
+    }
+
+    /**
+     * Opens a CODA Connect session. Send only the clinical phrase as {@code text}; patientRef and
+     * encounterRef are opaque tokens your EMR generates and maps (random, never an MRN or a hash of
+     * one). With a clinician (calling with an integration key), launchUrl signs that user into this
+     * one session without a CODA login. Build with {@link #of} and the {@code with…} methods.
+     */
+    public record ConnectSessionRequest(
+            String appId, String text, List<String> systems, String valueSet, String purpose, Integer maxSelections,
+            String returnOrigin, Boolean webhook, Integer expiresInMinutes, String patientRef, String encounterRef, Clinician clinician) {
+
+        public static ConnectSessionRequest of(String appId, String text) {
+            return new ConnectSessionRequest(appId, text, null, null, null, null, null, null, null, null, null, null);
+        }
+
+        public ConnectSessionRequest withSystems(List<String> value) {
+            return new ConnectSessionRequest(appId, text, value, valueSet, purpose, maxSelections, returnOrigin, webhook, expiresInMinutes, patientRef, encounterRef, clinician);
+        }
+
+        public ConnectSessionRequest withMaxSelections(int value) {
+            return new ConnectSessionRequest(appId, text, systems, valueSet, purpose, value, returnOrigin, webhook, expiresInMinutes, patientRef, encounterRef, clinician);
+        }
+
+        public ConnectSessionRequest withReturnOrigin(String value) {
+            return new ConnectSessionRequest(appId, text, systems, valueSet, purpose, maxSelections, value, webhook, expiresInMinutes, patientRef, encounterRef, clinician);
+        }
+
+        public ConnectSessionRequest withPatientRef(String value) {
+            return new ConnectSessionRequest(appId, text, systems, valueSet, purpose, maxSelections, returnOrigin, webhook, expiresInMinutes, value, encounterRef, clinician);
+        }
+
+        public ConnectSessionRequest withEncounterRef(String value) {
+            return new ConnectSessionRequest(appId, text, systems, valueSet, purpose, maxSelections, returnOrigin, webhook, expiresInMinutes, patientRef, value, clinician);
+        }
+
+        public ConnectSessionRequest withClinician(String ref, String name) {
+            return new ConnectSessionRequest(appId, text, systems, valueSet, purpose, maxSelections, returnOrigin, webhook, expiresInMinutes, patientRef, encounterRef, new Clinician(ref, name));
+        }
+    }
+
     public JsonNode systems() {
         return send("GET", "/api/v1/systems", null, null);
     }
@@ -98,6 +141,20 @@ public final class CodaClient {
     /** Grounded suggestions for a clinical phrase. Every candidate needs human review. */
     public JsonNode analyzePhrase(String phrase, List<SystemRef> systems) {
         return send("POST", "/api/v1/phrases/analyze", body("phrase", phrase, "systems", systems), null).get("result");
+    }
+
+    /** Opens a CODA Connect session; returns its id and launchUrl. Call from your server with an integration key. */
+    public JsonNode openConnectSession(ConnectSessionRequest request) {
+        Objects.requireNonNull(request, "request");
+        if (request.appId() == null || request.appId().isBlank()) {
+            throw new IllegalArgumentException("appId is required");
+        }
+        return send("POST", "/api/v1/connect/sessions", request, null);
+    }
+
+    /** A session and, once the clinician has finished, its result (also delivered by webhook). */
+    public JsonNode getConnectSession(String sessionId) {
+        return send("GET", "/api/v1/connect/sessions/" + URLEncoder.encode(sessionId, StandardCharsets.UTF_8), null, null);
     }
 
     /** Records a human-reviewed decision; reuse the idempotency key when retrying the same decision. */

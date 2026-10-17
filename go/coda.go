@@ -163,6 +163,45 @@ func (c *Client) AnalyzePhrase(ctx context.Context, phrase string, systems []Sys
 	return result, nil
 }
 
+// Clinician is your signed-in user, vouched for by your integration: an opaque id and an optional display name.
+type Clinician struct {
+	Ref  string `json:"ref"`
+	Name string `json:"name,omitempty"`
+}
+
+// ConnectSessionRequest opens a CODA Connect session. Send only the clinical phrase as Text.
+// PatientRef and EncounterRef are opaque tokens your EMR generates and maps (random, never an MRN
+// or a hash of one). With Clinician (calling with an integration key), LaunchURL signs that user
+// into this one session without a CODA login.
+type ConnectSessionRequest struct {
+	AppID            string     `json:"appId"`
+	Text             string     `json:"text,omitempty"`
+	Systems          []string   `json:"systems,omitempty"`
+	ValueSet         string     `json:"valueSet,omitempty"`
+	Purpose          string     `json:"purpose,omitempty"`
+	MaxSelections    int        `json:"maxSelections,omitempty"`
+	ReturnOrigin     string     `json:"returnOrigin,omitempty"`
+	Webhook          *bool      `json:"webhook,omitempty"`
+	ExpiresInMinutes int        `json:"expiresInMinutes,omitempty"`
+	PatientRef       string     `json:"patientRef,omitempty"`
+	EncounterRef     string     `json:"encounterRef,omitempty"`
+	Clinician        *Clinician `json:"clinician,omitempty"`
+}
+
+// OpenConnectSession opens a CODA Connect session and returns its id and launchUrl. Call it from
+// your server with an integration key as the token.
+func (c *Client) OpenConnectSession(ctx context.Context, request ConnectSessionRequest) (Object, error) {
+	if request.AppID == "" {
+		return nil, errors.New("coda: AppID is required")
+	}
+	return c.object(ctx, http.MethodPost, "/api/v1/connect/sessions", request, "")
+}
+
+// GetConnectSession returns a session and, once the clinician has finished, its result (also delivered by webhook).
+func (c *Client) GetConnectSession(ctx context.Context, sessionID string) (Object, error) {
+	return c.object(ctx, http.MethodGet, "/api/v1/connect/sessions/"+url.PathEscape(sessionID), nil, "")
+}
+
 // RecordDecision records a human-reviewed decision; reuse the key when retrying the same decision.
 func (c *Client) RecordDecision(ctx context.Context, request any, idempotencyKey string) (Object, error) {
 	if idempotencyKey == "" {

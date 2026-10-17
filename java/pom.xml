@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.ubeffiong</groupId>
   <artifactId>coda-client</artifactId>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <name>CODA client</name>
   <description>Client for the CODA clinical terminology API</description>
   <url>https://github.com/ubeffiong/coda-sdks</url>

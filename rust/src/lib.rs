@@ -56,6 +56,47 @@ pub struct CodingItem {
     pub value_set_url: Option<String>,
 }
 
+/// Your signed-in user, vouched for by your integration: an opaque id and an optional display name.
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct Clinician {
+    #[serde(rename = "ref")]
+    pub reference: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+}
+
+/// Opens a CODA Connect session. Send only the clinical phrase as `text`. `patient_ref` and
+/// `encounter_ref` are opaque tokens your EMR generates and maps (random, never an MRN or a hash of
+/// one). With `clinician` (calling with an integration key), `launchUrl` signs that user into this
+/// one session without a CODA login.
+#[derive(Debug, Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConnectSessionRequest {
+    pub app_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub systems: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value_set: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub purpose: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_selections: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub return_origin: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub webhook: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expires_in_minutes: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub patient_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub encounter_ref: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clinician: Option<Clinician>,
+}
+
 type TokenFn = Arc<dyn Fn() -> String + Send + Sync>;
 
 /// Thread-safe client; clone it freely.
@@ -150,6 +191,20 @@ impl Client {
     pub fn analyze_phrase(&self, phrase: &str, systems: &[SystemRef]) -> Result<Value, ApiError> {
         let r = self.send("POST", "/api/v1/phrases/analyze", Some(Body::Json(json!({ "phrase": phrase, "systems": systems }))), None)?;
         Ok(r.get("result").cloned().unwrap_or(Value::Null))
+    }
+
+    /// Opens a CODA Connect session and returns its id and launchUrl. Call from your server with an integration key.
+    pub fn open_connect_session(&self, request: &ConnectSessionRequest) -> Result<Value, ApiError> {
+        if request.app_id.is_empty() {
+            return Err(local_error("app_id is required"));
+        }
+        let body = serde_json::to_value(request).map_err(|e| local_error(&e.to_string()))?;
+        self.send("POST", "/api/v1/connect/sessions", Some(Body::Json(body)), None)
+    }
+
+    /// A session and, once the clinician has finished, its result (also delivered by webhook).
+    pub fn get_connect_session(&self, session_id: &str) -> Result<Value, ApiError> {
+        self.send("GET", &format!("/api/v1/connect/sessions/{}", encode(session_id)), None, None)
     }
 
     /// Records a human-reviewed decision; reuse the key when retrying the same decision.

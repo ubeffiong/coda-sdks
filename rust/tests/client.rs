@@ -1,4 +1,4 @@
-use coda_client::{Client, CodingItem, SystemRef};
+use coda_client::{Client, Clinician, CodingItem, ConnectSessionRequest, SystemRef};
 use serde_json::{json, Value};
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::TcpListener;
@@ -132,4 +132,30 @@ fn verify_webhook_shared_vector() {
     assert!(!verify_webhook(secret, id, "1792100000", sig, &format!("{body} "), 1792100000, 300));
     assert!(!verify_webhook(secret, id, "1792100000", sig, body, 1792100000 + 600, 300));
     assert!(!verify_webhook("whsec_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", id, "1792100000", sig, body, 1792100000, 300));
+}
+
+#[test]
+fn opens_a_connect_session_and_launches_the_clinician() {
+    let (url, log) = mock(vec![
+        (201, r#"{"id":"s-1","launchUrl":"https://coda.test/connect?session=s-1&launch=coda_lc_x"}"#, None),
+        (200, r#"{"id":"s-1","status":"completed","result":{"selections":[{"code":"5A11"}]}}"#, None),
+    ]);
+    let client = Client::new(&url, "coda_sk_integration-key");
+    let s = client
+        .open_connect_session(&ConnectSessionRequest {
+            app_id: "app-1".into(),
+            text: Some("type 2 diabetes".into()),
+            patient_ref: Some("pt_3f2b8c1e".into()),
+            clinician: Some(Clinician { reference: "usr_7c1d2e9a".into(), name: Some("Dr A. Bello".into()) }),
+            ..Default::default()
+        })
+        .unwrap();
+    assert_eq!(s["id"], "s-1");
+    assert_eq!(client.get_connect_session("s-1").unwrap()["result"]["selections"][0]["code"], "5A11");
+    let reqs = log.lock().unwrap().clone();
+    assert_eq!((reqs[0].method.as_str(), reqs[0].uri.as_str()), ("POST", "/api/v1/connect/sessions"));
+    assert_eq!(reqs[0].header("Authorization"), Some("Bearer coda_sk_integration-key"));
+    let body: Value = serde_json::from_str(&reqs[0].body).unwrap();
+    assert_eq!(body, json!({"appId": "app-1", "text": "type 2 diabetes", "patientRef": "pt_3f2b8c1e", "clinician": {"ref": "usr_7c1d2e9a", "name": "Dr A. Bello"}}));
+    assert_eq!(reqs[1].uri, "/api/v1/connect/sessions/s-1");
 }

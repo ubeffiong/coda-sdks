@@ -48,6 +48,23 @@ class Mock:
 
 
 class CodaClientTests(unittest.TestCase):
+    def test_opens_a_connect_session_with_an_integration_key_and_launches_the_clinician(self):
+        m = Mock([
+            (201, {"id": "s-1", "status": "open", "launchUrl": "https://coda.test/connect?session=s-1&launch=coda_lc_x"}),
+            (200, {"id": "s-1", "status": "completed", "result": {"selections": [{"code": "5A11"}]}}),
+        ])
+        client = CodaClient(m.url, "coda_sk_integration-key")
+        s = client.open_connect_session("app-1", "type 2 diabetes", patient_ref="pt_3f2b8c1e", clinician_ref="usr_7c1d2e9a", clinician_name="Dr A. Bello")
+        self.assertIn("launch=coda_lc_", s["launchUrl"])
+        self.assertEqual(client.get_connect_session("s-1")["result"]["selections"][0]["code"], "5A11")
+        open_req, get_req = m.requests
+        self.assertEqual(open_req["headers"]["Authorization"], "Bearer coda_sk_integration-key")
+        self.assertEqual((open_req["method"], open_req["path"]), ("POST", "/api/v1/connect/sessions"))
+        self.assertEqual(json.loads(open_req["body"]), {"appId": "app-1", "text": "type 2 diabetes", "patientRef": "pt_3f2b8c1e",
+                                                        "clinician": {"ref": "usr_7c1d2e9a", "name": "Dr A. Bello"}})
+        self.assertEqual((get_req["method"], get_req["path"]), ("GET", "/api/v1/connect/sessions/s-1"))
+        m.close()
+
     def test_search_posts_query_with_auth_and_request_id(self):
         m = Mock([(200, {"requestId": "r1", "groups": []})])
         r = CodaClient(m.url + "/", lambda: "tok-1").search("type 2 diabetes", ["urn:coda:fixture:clinical"], count=5)

@@ -100,3 +100,24 @@ test('verifyWebhook accepts the shared vector and rejects tampering, replay and 
   assert.equal(await verifyWebhook(VECTOR.secret, VECTOR.headers, VECTOR.body, { nowSeconds: 1792100000 + 600 }), false);
   assert.equal(await verifyWebhook('whsec_' + Buffer.alloc(32, 1).toString('base64'), VECTOR.headers, VECTOR.body, at), false);
 });
+
+test('opens a Connect session with an integration key and launches the clinician', async () => {
+  const m = await mock([
+    [201, { id: 's-1', status: 'open', launchUrl: 'https://coda.test/connect?session=s-1&launch=coda_lc_x', result: null }],
+    [200, { id: 's-1', status: 'completed', launchUrl: null, result: { selections: [{ code: '5A11' }] } }],
+  ]);
+  const client = new CodaClient({ baseUrl: m.url, token: 'coda_sk_integration-key' });
+  const s = await client.openConnectSession({
+    appId: 'app-1', text: 'type 2 diabetes', patientRef: 'pt_3f2b8c1e', clinician: { ref: 'usr_7c1d2e9a', name: 'Dr A. Bello' },
+  });
+  assert.match(s.launchUrl, /launch=coda_lc_/);
+  const done = await client.getConnectSession('s-1');
+  assert.equal(done.result.selections[0].code, '5A11');
+
+  const [open, get] = m.requests;
+  assert.equal(open.headers.authorization, 'Bearer coda_sk_integration-key');
+  assert.deepEqual([open.method, open.url], ['POST', '/api/v1/connect/sessions']);
+  assert.deepEqual(JSON.parse(open.body), { appId: 'app-1', text: 'type 2 diabetes', patientRef: 'pt_3f2b8c1e', clinician: { ref: 'usr_7c1d2e9a', name: 'Dr A. Bello' } });
+  assert.deepEqual([get.method, get.url], ['GET', '/api/v1/connect/sessions/s-1']);
+  await m.close();
+});

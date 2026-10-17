@@ -72,6 +72,26 @@ class CodaClientTest {
     }
 
     @Test
+    void opensAConnectSessionAndLaunchesTheClinician() throws Exception {
+        String url = start(new Reply(201, "{\"id\":\"s-1\",\"launchUrl\":\"https://coda.test/connect?session=s-1&launch=coda_lc_x\"}", Map.of()),
+                ok("{\"id\":\"s-1\",\"status\":\"completed\",\"result\":{\"selections\":[{\"code\":\"5A11\"}]}}"));
+        var client = CodaClient.builder().baseUrl(url).token("coda_sk_integration-key").build();
+        var s = client.openConnectSession(CodaClient.ConnectSessionRequest.of("app-1", "type 2 diabetes")
+                .withPatientRef("pt_3f2b8c1e").withClinician("usr_7c1d2e9a", "Dr A. Bello"));
+        assertEquals("s-1", s.get("id").asText());
+        assertEquals("5A11", client.getConnectSession("s-1").get("result").get("selections").get(0).get("code").asText());
+
+        var open = requests.get(0);
+        assertEquals("POST", open.method());
+        assertEquals("/api/v1/connect/sessions", open.uri());
+        assertEquals("Bearer coda_sk_integration-key", open.headers().get("Authorization").get(0));
+        var mapper = new ObjectMapper();
+        assertEquals(mapper.readTree("{\"appId\":\"app-1\",\"text\":\"type 2 diabetes\",\"patientRef\":\"pt_3f2b8c1e\",\"clinician\":{\"ref\":\"usr_7c1d2e9a\",\"name\":\"Dr A. Bello\"}}"),
+                mapper.readTree(open.body()));
+        assertEquals("/api/v1/connect/sessions/s-1", requests.get(1).uri());
+    }
+
+    @Test
     void lookupEncodesQuery() throws Exception {
         String url = start(ok("{\"code\":\"1A00\"}"));
         CodaClient.builder().baseUrl(url).token("t").build().lookup("http://id.who.int/icd/release/11/mms", "1A00", "2025-01");

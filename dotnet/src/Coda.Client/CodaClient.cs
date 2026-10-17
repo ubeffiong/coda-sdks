@@ -70,6 +70,31 @@ public sealed class CodaApiException : Exception
 
 public sealed record SystemRef(string System, string? Version = null);
 
+/// <summary>Your signed-in user, vouched for by your integration: an opaque id and an optional display name.</summary>
+public sealed record ConnectClinician(string Ref, string? Name = null);
+
+/// <summary>
+/// Opens a CODA Connect session. Send only the clinical phrase as <see cref="Text"/>. PatientRef and
+/// EncounterRef are opaque tokens your EMR generates and maps (random, never an MRN or a hash of one).
+/// With <see cref="Clinician"/> (calling with an integration key), launchUrl signs that user into this
+/// one session without a CODA login.
+/// </summary>
+public sealed record ConnectSessionRequest
+{
+    public required string AppId { get; init; }
+    public string? Text { get; init; }
+    public IReadOnlyList<string>? Systems { get; init; }
+    public string? ValueSet { get; init; }
+    public string? Purpose { get; init; }
+    public int? MaxSelections { get; init; }
+    public string? ReturnOrigin { get; init; }
+    public bool? Webhook { get; init; }
+    public int? ExpiresInMinutes { get; init; }
+    public string? PatientRef { get; init; }
+    public string? EncounterRef { get; init; }
+    public ConnectClinician? Clinician { get; init; }
+}
+
 public sealed record CodingItem(string System, string Code, string? Version = null, string? Display = null, string? ValueSetUrl = null);
 
 /// <summary>
@@ -120,6 +145,21 @@ public sealed class CodaClient : IDisposable
     /// <summary>Grounded suggestions for a clinical phrase. Every candidate needs human review.</summary>
     public Task<JsonNode> AnalyzePhraseAsync(string phrase, IEnumerable<SystemRef> systems, CancellationToken ct = default) =>
         SendAsync(HttpMethod.Post, "/api/v1/phrases/analyze", new { phrase, systems }, null, ct);
+
+    /// <summary>Opens a CODA Connect session; returns its id and launchUrl. Call from your server with an integration key.</summary>
+    public Task<JsonNode> OpenConnectSessionAsync(ConnectSessionRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.AppId);
+        return SendAsync(HttpMethod.Post, "/api/v1/connect/sessions", request, null, ct);
+    }
+
+    /// <summary>A session and, once the clinician has finished, its result (also delivered by webhook).</summary>
+    public Task<JsonNode> GetConnectSessionAsync(string sessionId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sessionId);
+        return SendAsync(HttpMethod.Get, "/api/v1/connect/sessions/" + Uri.EscapeDataString(sessionId), null, null, ct);
+    }
 
     /// <summary>Records a human-reviewed decision. Reuse the same idempotency key when retrying the same decision.</summary>
     public Task<JsonNode> RecordDecisionAsync(object request, string idempotencyKey, CancellationToken ct = default)

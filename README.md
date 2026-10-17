@@ -25,16 +25,16 @@ curl -fsSL https://raw.githubusercontent.com/ubeffiong/coda-sdks/main/install.sh
 & ([scriptblock]::Create((irm https://raw.githubusercontent.com/ubeffiong/coda-sdks/main/install.ps1))) dotnet
 ```
 
-Add a version to pin one, e.g. `... | sh -s -- python 0.1.0`. To install directly without the script:
+Add a version to pin one, e.g. `... | sh -s -- python 0.2.0`. To install directly without the script:
 
 | Language | From GitHub |
 |---|---|
-| TypeScript / JavaScript | `npm install https://github.com/ubeffiong/coda-sdks/releases/download/v0.1.0/coda-terminology-client-0.1.0.tgz` |
-| Python | `pip install "coda-client @ git+https://github.com/ubeffiong/coda-sdks@v0.1.0#subdirectory=python"` |
-| C# / .NET | download `Coda.Client.0.1.0.nupkg` from the release, then `dotnet add package Coda.Client --source <folder>` |
-| Java | download `coda-client-0.1.0.jar`, then `mvn install:install-file -Dfile=coda-client-0.1.0.jar -DgroupId=io.github.ubeffiong -DartifactId=coda-client -Dversion=0.1.0 -Dpackaging=jar` |
-| Go | `go get github.com/ubeffiong/coda-sdks/go@v0.1.0` |
-| Rust | `cargo add coda-client --git https://github.com/ubeffiong/coda-sdks --tag v0.1.0` |
+| TypeScript / JavaScript | `npm install https://github.com/ubeffiong/coda-sdks/releases/download/v0.2.0/coda-terminology-client-0.2.0.tgz` |
+| Python | `pip install "coda-client @ git+https://github.com/ubeffiong/coda-sdks@v0.2.0#subdirectory=python"` |
+| C# / .NET | download `Coda.Client.0.2.0.nupkg` from the release, then `dotnet add package Coda.Client --source <folder>` |
+| Java | download `coda-client-0.2.0.jar`, then `mvn install:install-file -Dfile=coda-client-0.2.0.jar -DgroupId=io.github.ubeffiong -DartifactId=coda-client -Dversion=0.2.0 -Dpackaging=jar` |
+| Go | `go get github.com/ubeffiong/coda-sdks/go@v0.2.0` |
+| Rust | `cargo add coda-client --git https://github.com/ubeffiong/coda-sdks --tag v0.2.0` |
 
 Once published, the usual registry commands work too (`npm install @coda-terminology/client`, `pip install coda-client`, `dotnet add package Coda.Client`, Maven Central, `cargo add coda-client`).
 
@@ -61,6 +61,8 @@ Integrating an EMR or another clinical system? Start with [docs/EMR-INTEGRATION.
 | `translate(system, code)` | `POST /api/v1/translate` | Approved local mappings only |
 | `analyzePhrase(phrase, systems[])` | `POST /api/v1/phrases/analyze` | Grounded suggestions; always needs human review |
 | `recordDecision(request, idempotencyKey)` | `POST /api/v1/decisions` | Requires an `Idempotency-Key`; replays are safe |
+| `openConnectSession(request)` | `POST /api/v1/connect/sessions` | From your server with an integration key; `clinician` makes `launchUrl` sign that user in |
+| `getConnectSession(id)` | `GET /api/v1/connect/sessions/{id}` | Status and result (also delivered by webhook) |
 
 **Behaviour, identical in every SDK**
 1. Every request sends `Authorization: Bearer …`, `Accept: application/json` and a fresh `X-Request-Id`.

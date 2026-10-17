@@ -91,6 +91,44 @@ class CodaClient:
             raise ValueError("idempotency_key is required")
         return self._send("POST", "/api/v1/decisions", dict(request), {"Idempotency-Key": idempotency_key})
 
+    def open_connect_session(
+        self,
+        app_id: str,
+        text: Optional[str] = None,
+        *,
+        systems: Optional[Iterable[str]] = None,
+        value_set: Optional[str] = None,
+        purpose: Optional[str] = None,
+        max_selections: Optional[int] = None,
+        return_origin: Optional[str] = None,
+        webhook: Optional[bool] = None,
+        expires_in_minutes: Optional[int] = None,
+        patient_ref: Optional[str] = None,
+        encounter_ref: Optional[str] = None,
+        clinician_ref: Optional[str] = None,
+        clinician_name: Optional[str] = None,
+    ) -> JSON:
+        """Opens a CODA Connect session (call from your server, with an integration key as the token).
+
+        ``patient_ref`` and ``encounter_ref`` are opaque tokens your EMR generates and maps (random,
+        never an MRN or a hash of one). With ``clinician_ref`` the returned ``launchUrl`` signs your
+        user into this one session, with no CODA login.
+        """
+        if not app_id:
+            raise ValueError("app_id is required")
+        body: Dict[str, Any] = _clean({
+            "appId": app_id, "text": text, "systems": list(systems) if systems is not None else None, "valueSet": value_set,
+            "purpose": purpose, "maxSelections": max_selections, "returnOrigin": return_origin, "webhook": webhook,
+            "expiresInMinutes": expires_in_minutes, "patientRef": patient_ref, "encounterRef": encounter_ref,
+        })
+        if clinician_ref:
+            body["clinician"] = _clean({"ref": clinician_ref, "name": clinician_name})
+        return self._send("POST", "/api/v1/connect/sessions", body)
+
+    def get_connect_session(self, session_id: str) -> JSON:
+        """A session and, once the clinician has finished, its result (also delivered by webhook)."""
+        return self._send("GET", "/api/v1/connect/sessions/" + urllib.parse.quote(session_id, safe=""))
+
     # Transport --------------------------------------------------------------------------
 
     def _send(self, method: str, path: str, body: Any = None, extra: Optional[Mapping[str, str]] = None) -> Any:

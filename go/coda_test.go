@@ -124,3 +124,29 @@ func TestFHIRAndDecisionHeaders(t *testing.T) {
 		t.Fatal("missing idempotency key")
 	}
 }
+
+func TestOpensAConnectSessionAndLaunchesTheClinician(t *testing.T) {
+	c, reqs := mock(t,
+		reply{201, `{"id":"s-1","launchUrl":"https://coda.test/connect?session=s-1&launch=coda_lc_x"}`, nil},
+		reply{200, `{"id":"s-1","status":"completed","result":{"selections":[{"code":"5A11"}]}}`, nil})
+	s, err := c.OpenConnectSession(context.Background(), ConnectSessionRequest{
+		AppID: "app-1", Text: "type 2 diabetes", PatientRef: "pt_3f2b8c1e", Clinician: &Clinician{Ref: "usr_7c1d2e9a", Name: "Dr A. Bello"},
+	})
+	if err != nil || s["id"] != "s-1" {
+		t.Fatalf("unexpected: %v %v", s, err)
+	}
+	done, err := c.GetConnectSession(context.Background(), "s-1")
+	if err != nil || done["status"] != "completed" {
+		t.Fatalf("unexpected: %v %v", done, err)
+	}
+	open := (*reqs)[0]
+	if open.Method != "POST" || open.URI != "/api/v1/connect/sessions" {
+		t.Fatalf("bad request: %+v", open)
+	}
+	if open.Body != `{"appId":"app-1","text":"type 2 diabetes","patientRef":"pt_3f2b8c1e","clinician":{"ref":"usr_7c1d2e9a","name":"Dr A. Bello"}}` {
+		t.Fatalf("bad body: %s", open.Body)
+	}
+	if (*reqs)[1].URI != "/api/v1/connect/sessions/s-1" {
+		t.Fatalf("bad get: %+v", (*reqs)[1])
+	}
+}

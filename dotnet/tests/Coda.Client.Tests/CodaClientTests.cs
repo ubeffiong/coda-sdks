@@ -65,6 +65,27 @@ public sealed class CodaClientTests
     }
 
     [Fact]
+    public async Task Opens_a_connect_session_and_launches_the_clinician()
+    {
+        var (client, handler) = Create();
+        handler.Then(HttpStatusCode.Created, """{"id":"s-1","status":"open","launchUrl":"https://coda.test/connect?session=s-1&launch=coda_lc_x"}""");
+        handler.Then(HttpStatusCode.OK, """{"id":"s-1","status":"completed","result":{"selections":[{"code":"5A11"}]}}""");
+
+        var s = await client.OpenConnectSessionAsync(new ConnectSessionRequest
+        {
+            AppId = "app-1", Text = "type 2 diabetes", PatientRef = "pt_3f2b8c1e", Clinician = new ConnectClinician("usr_7c1d2e9a", "Dr A. Bello"),
+        }, Ct);
+        Assert.Contains("launch=coda_lc_", s["launchUrl"]!.GetValue<string>(), StringComparison.Ordinal);
+        var done = await client.GetConnectSessionAsync("s-1", Ct);
+        Assert.Equal("5A11", done["result"]!["selections"]![0]!["code"]!.GetValue<string>());
+
+        var (open, body) = handler.Requests[0];
+        Assert.Equal((HttpMethod.Post, "/api/v1/connect/sessions"), (open.Method, open.RequestUri!.AbsolutePath));
+        Assert.Equal("""{"appId":"app-1","text":"type 2 diabetes","patientRef":"pt_3f2b8c1e","clinician":{"ref":"usr_7c1d2e9a","name":"Dr A. Bello"}}""", body);
+        Assert.Equal((HttpMethod.Get, "/api/v1/connect/sessions/s-1"), (handler.Requests[1].Request.Method, handler.Requests[1].Request.RequestUri!.AbsolutePath));
+    }
+
+    [Fact]
     public async Task Lookup_encodes_query_parameters()
     {
         var (client, handler) = Create();

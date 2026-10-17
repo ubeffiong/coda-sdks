@@ -107,6 +107,60 @@ export interface PhraseAnalysis {
   [extra: string]: unknown;
 }
 
+/** Opens a CODA Connect session for an EMR (or another system). Phrases travel in the body, never a URL. */
+export interface ConnectSessionRequest {
+  /** The Connect app id (Developer hub, Connected apps). */
+  appId: string;
+  /** The clinical phrase only: no names, record numbers or dates. */
+  text?: string;
+  /** Terminology URIs to offer; omit for CODA's defaults. */
+  systems?: string[];
+  /** Restrict choices to a value set (key or canonical URL). */
+  valueSet?: string;
+  purpose?: string;
+  maxSelections?: number;
+  /** Registered origin that receives the result in the browser. */
+  returnOrigin?: string;
+  /** Also deliver connect.selection.completed by webhook (default true). */
+  webhook?: boolean;
+  expiresInMinutes?: number;
+  /** Opaque token your EMR generates and maps (e.g. a random UUID); never an MRN or a hash of one. */
+  patientRef?: string;
+  /** Opaque encounter token, same rules as patientRef. */
+  encounterRef?: string;
+  /**
+   * Your signed-in user, when calling with an integration key: the launchUrl then signs them into
+   * this one session without a CODA login. `ref` is your opaque user id; `name` is shown in CODA.
+   */
+  clinician?: { ref: string; name?: string };
+}
+
+export interface ConnectSelection {
+  system: string;
+  systemKey: string;
+  version: string;
+  code: string;
+  display: string;
+  coding: { system: string; version: string; code: string; display: string };
+  /** HL7 v2 CWE: code^display^system. */
+  cwe: string;
+}
+
+export interface ConnectSession {
+  id: string;
+  appId: string;
+  appName: string;
+  status: 'open' | 'completed' | 'cancelled' | 'expired';
+  purpose: string;
+  /** Open this for the clinician (pop-up, iframe or new tab). Null once the session is closed. */
+  launchUrl: string | null;
+  expiresAt: string;
+  patientRef?: string | null;
+  encounterRef: string | null;
+  result: { sessionId: string; status: 'completed'; completedAt: string; completedBy: string; patientRef?: string | null; encounterRef: string | null; selections: ConnectSelection[] } | null;
+  [extra: string]: unknown;
+}
+
 /** An RFC 7807 problem from CODA with its stable error code. */
 export class CodaApiError extends Error {
   constructor(
@@ -180,6 +234,20 @@ export class CodaClient {
   recordDecision(request: Record<string, unknown>, idempotencyKey: string): Promise<unknown> {
     if (!idempotencyKey) throw new TypeError('idempotencyKey is required');
     return this.send('POST', '/api/v1/decisions', request, { 'Idempotency-Key': idempotencyKey });
+  }
+
+  /**
+   * Opens a CODA Connect session. Call it from your server with an integration key as the token;
+   * with `clinician`, the returned launchUrl opens CODA already signed in for that one session.
+   */
+  openConnectSession(request: ConnectSessionRequest): Promise<ConnectSession> {
+    if (!request?.appId) throw new TypeError('appId is required');
+    return this.send('POST', '/api/v1/connect/sessions', request);
+  }
+
+  /** A session and, once the clinician has finished, its result (also delivered by webhook). */
+  getConnectSession(id: string): Promise<ConnectSession> {
+    return this.send('GET', `/api/v1/connect/sessions/${encodeURIComponent(id)}`);
   }
 
   private async send<T>(method: string, path: string, body?: unknown, extra: Record<string, string> = {}): Promise<T> {

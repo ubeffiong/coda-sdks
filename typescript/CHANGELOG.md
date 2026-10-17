@@ -4,6 +4,12 @@ All notable changes to `@coda-terminology/client` are recorded here. The format 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-17
+
+### Added
+- `openConnectSession()` and `getConnectSession()`: open a CODA Connect session from your server (authenticate with an integration key as the token), with an opaque `patientRef` and `encounterRef`, and an optional `clinician` whose launch URL signs them into that one session without a CODA login.
+- `@coda-terminology/client/connect`: `patientRef` in `pick()`, and a `launch` option that opens CODA through your server's launch URL (no CODA sign-in).
+
 ## [0.1.0] - 2026-10-17
 
 ### Added
